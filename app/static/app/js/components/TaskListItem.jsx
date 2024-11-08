@@ -473,6 +473,9 @@ class TaskListItem extends React.Component {
         addActionButton(" " + _("View 3D Model"), "btn-primary", "fa fa-cube", () => {
           location.href = `/3d/project/${task.project}/task/${task.id}/`;
         });
+        addActionButton(" " + _("Run Object Classification"), "btn-primary", "fa fa-cube", () => {
+          location.href = `/3d/project/${task.project}/task/${task.id}/`;
+        });
       }
 
       if (editable || (!task.processing_node)){
