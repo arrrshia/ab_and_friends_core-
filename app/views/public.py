@@ -67,3 +67,22 @@ def task_json(request, task_pk=None):
     task = get_public_task(task_pk)
     serializer = TaskSerializer(task)
     return JsonResponse(serializer.data)
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from app.models import Task
+
+def download_classification_file(request, project_pk, task_pk):
+    task = get_object_or_404(Task, pk=task_pk, project__pk=project_pk)
+
+    # Define the file path for the object classification result
+    file_path = task.get_classification_file_path()  # Assume this method gives the full file path
+
+    # Serve the file if it exists
+    try:
+        with open(file_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type="application/octet-stream")
+            response['Content-Disposition'] = f'attachment; filename="{task.name}_classification_result.zip"'
+            return response
+    except FileNotFoundError:
+        raise Http404("Classification file not found")

@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^map/project/(?P<project_pk>[^/.]+)/task/(?P<task_pk>[^/.]+)/$', app_views.map, name='map'),
     url(r'^map/project/(?P<project_pk>[^/.]+)/$', app_views.map, name='map'),
     url(r'^3d/project/(?P<project_pk>[^/.]+)/task/(?P<task_pk>[^/.]+)/$', app_views.model_display, name='model_display'),
-
+    url(r'^api/project/(?P<project_pk>[^/.]+)/task/(?P<task_pk>[^/.]+)/classification/', app_views.classification, name='classification'),
     url(r'^public/task/(?P<task_pk>[^/.]+)/map/$', public_views.map, name='public_map'),
     url(r'^public/task/(?P<task_pk>[^/.]+)/iframe/map/$', public_views.map_iframe, name='public_iframe_map'),
     url(r'^public/task/(?P<task_pk>[^/.]+)/3d/$', public_views.model_display, name='public_3d'),

@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from guardian.shortcuts import get_objects_for_user
-
+import os
 from nodeodm.models import ProcessingNode
 from app.models import Project, Task
 from django.contrib import messages
@@ -110,6 +110,29 @@ def model_display(request, project_pk=None, task_pk=None):
                 'share-buttons': 'false' if settings.DESKTOP_MODE else 'true'
             }.items()
         })
+
+from django.contrib import messages
+
+@login_required
+def classification(request, project_pk=None, task_pk=None):
+    if project_pk is not None:
+        project = get_object_or_404(Project, pk=project_pk)
+        if not request.user.has_perm('app.view_project', project):
+            raise Http404()
+
+        if task_pk is not None:
+            task = get_object_or_404(Task, pk=task_pk, project=project)
+            point_cloud_key = 'georeferenced_model.laz'  # or 'georeferenced_model.las'
+
+            try:
+                point_cloud_path = task.get_asset_download_path(point_cloud_key)
+                # Store the path in Django messages
+                messages.info(request, f"Point Cloud Path: {point_cloud_path}")
+            except FileNotFoundError:
+                messages.error(request, "Point cloud file is not available for this task.")
+                
+    return redirect('dashboard')  # Redirect to a page where the alert should appear
+
 
 def about(request):
     return render(request, 'app/about.html', {'title': _('About'), 'version': settings.VERSION})
