@@ -27,6 +27,9 @@ if [ $? -ne 0 ]; then
     exit
 fi
 
+# Check for libraries for npy conversion
+python -c "import numpy, laspy, lazrs; print('Libraries for npy file conversion are installed')"
+
 # Check GDAL version
 python -c "import sys;import re;import subprocess;version = subprocess.Popen([\"gdalinfo\", \"--version\"], stdout=subprocess.PIPE).communicate()[0].decode().rstrip();ret = 0 if re.compile('^GDAL [2-9]\.[0-9]+').match(version) else 1; print('Checking GDAL version... ' + ('{}, excellent!'.format(version) if ret == 0 else version));sys.exit(ret);"
 if [ $? -ne 0 ]; then

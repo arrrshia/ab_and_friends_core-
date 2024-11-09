@@ -477,8 +477,6 @@ class TaskListItem extends React.Component {
         addActionButton(" " + _("Run Object Classification"), "btn-primary", "fa fa-cube", () => {
           location.href = `/api/project/${task.project}/task/${task.id}/classification/`;
         });
-      
-
       }
 
       if (editable || (!task.processing_node)){

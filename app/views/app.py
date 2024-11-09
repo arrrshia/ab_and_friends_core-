@@ -1,12 +1,12 @@
 import json
-
+import numpy as np
+import os
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from django.http import Http404
+from django.http import FileResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from guardian.shortcuts import get_objects_for_user
-import os
 from nodeodm.models import ProcessingNode
 from app.models import Project, Task
 from django.contrib import messages
@@ -111,7 +111,11 @@ def model_display(request, project_pk=None, task_pk=None):
             }.items()
         })
 
-from django.contrib import messages
+def convert_laz_to_npy(laz_file_path, npy_file_path):
+    with laspy.open(laz_file_path) as laz_file:
+        point_cloud = laz_file.read().points
+        points = np.vstack((point_cloud.x, point_cloud.y, point_cloud.z)).transpose()
+    np.save(npy_file_path, points)
 
 @login_required
 def classification(request, project_pk=None, task_pk=None):
@@ -122,17 +126,22 @@ def classification(request, project_pk=None, task_pk=None):
 
         if task_pk is not None:
             task = get_object_or_404(Task, pk=task_pk, project=project)
-            point_cloud_key = 'georeferenced_model.laz'  # or 'georeferenced_model.las'
+            point_cloud_key = 'georeferenced_model.laz'
+            point_cloud_path = task.get_asset_download_path(point_cloud_key)
+            npy_file_path = point_cloud_path.replace('.laz', '.npy')
 
             try:
-                point_cloud_path = task.get_asset_download_path(point_cloud_key)
-                # Store the path in Django messages
-                messages.info(request, f"Point Cloud Path: {point_cloud_path}")
+                if not os.path.exists(npy_file_path):
+                    convert_laz_to_npy(point_cloud_path, npy_file_path)
+
+                response = FileResponse(open(npy_file_path, 'rb'), as_attachment=True, filename=os.path.basename(npy_file_path))
+
+                return response
+
             except FileNotFoundError:
                 messages.error(request, "Point cloud file is not available for this task.")
                 
-    return redirect('dashboard')  # Redirect to a page where the alert should appear
-
+    return redirect('dashboard')
 
 def about(request):
     return render(request, 'app/about.html', {'title': _('About'), 'version': settings.VERSION})
